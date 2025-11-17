@@ -237,6 +237,43 @@ app.get("/iphones", (req, res) => {
     res.json(results);
   });
 });
+app.get("/iphones/:id", (req, res) => {
+  const phoneId = req.params.id;
+  const selectProduct = `
+    SELECT
+      p.product_id,
+      p.product_name,
+      p.product_url,
+      pd.Description_id AS description_id,
+      pd.Product_brief_description AS brief_description,
+      pd.Product_description AS full_description,
+      pd.Product_img AS product_img,
+      pd.Product_link AS product_link,
+      pp.price_id,
+      pp.starting_price,
+      pp.price_range
+    FROM Products p
+    LEFT JOIN product_Description pd
+      ON pd.product_id = p.product_id
+    LEFT JOIN Product_Price pp
+      ON pp.product_id = p.product_id
+      WHERE P.product_id = ?;
+  `;
+
+  db.query(selectProduct,[phoneId], (err, rows) => {
+    if (err) {
+      console.error("database error:", err);
+      return res.status(500).send("Internal server error!");
+    } else if (rows.length === 0) {
+      res.status(404).send("product not found");
+    } else{
+       const phone = rows[0]
+      res.json(phone);
+    }
+  });
+});
+
+
 
 // -----------------------------------------
 // SERVER START
